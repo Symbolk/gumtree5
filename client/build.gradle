@@ -1,1 +1,4 @@
 description = 'GumTree abstract client module.'
+dependencies{
+    compile 'org.neo4j.driver:neo4j-java-driver:1.7.5'
+}
