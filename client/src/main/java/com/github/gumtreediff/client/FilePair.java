@@ -4,11 +4,21 @@ public class FilePair {
     private ChangeType changeType;
     private String oldPath;
     private String newPath;
+    private String oldContent;
+    private String newContent;
 
     public FilePair(ChangeType changeType, String oldPath, String newPath) {
         this.changeType = changeType;
         this.oldPath = oldPath;
         this.newPath = newPath;
+    }
+
+    public FilePair(ChangeType changeType, String oldPath, String newPath, String oldContent, String newContent) {
+        this.changeType = changeType;
+        this.oldPath = oldPath;
+        this.newPath = newPath;
+        this.oldContent = oldContent;
+        this.newContent = newContent;
     }
 
     public ChangeType getChangeType() {
@@ -33,5 +43,21 @@ public class FilePair {
 
     public void setNewPath(String newPath) {
         this.newPath = newPath;
+    }
+
+    public String getOldContent() {
+        return oldContent;
+    }
+
+    public void setOldContent(String oldContent) {
+        this.oldContent = oldContent;
+    }
+
+    public String getNewContent() {
+        return newContent;
+    }
+
+    public void setNewContent(String newContent) {
+        this.newContent = newContent;
     }
 }

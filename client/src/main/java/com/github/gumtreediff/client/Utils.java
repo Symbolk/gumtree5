@@ -4,7 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 public class Utils {
     /**
@@ -47,32 +51,34 @@ public class Utils {
      *
      * @return
      */
-    public static ArrayList<FilePair> getChangedFiles(String status) {
+    public static ArrayList<FilePair> getChangedFiles(String repoDir, String status) {
         ArrayList<FilePair> filePairList = new ArrayList<>();
         String lines[] = status.split("\\r?\\n");
         for (int i = 0; i < lines.length; i++) {
             String temp[] = lines[i].trim().split("\\s+");
             String symbol = temp[0];
-            String path = temp[1];
+            String relativePath = temp[1];
+            String absolutePath = repoDir + File.separator + relativePath;
             ChangeType changeType = getTypeFromSymbol(symbol);
             FilePair filePair = null;
             switch (changeType) {
                 case MODIFIED:
-                    filePair = new FilePair(changeType, path, path);
+                    filePair = new FilePair(changeType, relativePath, relativePath, getContentAtHEAD(repoDir, relativePath), readFileToString(absolutePath));
                     break;
                 case ADDED:
                 case UNTRACKED:
-                    filePair = new FilePair(changeType, "", path);
+                    filePair = new FilePair(changeType, "", relativePath, "", readFileToString(absolutePath));
                     break;
                 case DELETED:
-                    filePair = new FilePair(changeType, path, "");
+                    filePair = new FilePair(changeType, relativePath, "", getContentAtHEAD(repoDir, relativePath), "");
                     break;
                 case RENAMED:
                 case COPIED:
                     if (temp.length == 4) {
                         String oldPath = temp[1];
                         String newPath = temp[3];
-                        filePair = new FilePair(changeType, oldPath, newPath);
+                        String newAbsPath = repoDir + File.separator + temp[3];
+                        filePair = new FilePair(changeType, oldPath, newPath, getContentAtHEAD(repoDir, oldPath), readFileToString(newAbsPath));
                     }
                     break;
                 default:
@@ -92,6 +98,47 @@ public class Utils {
             }
         }
         return ChangeType.UNMODIFIED;
+    }
+
+    /**
+     * Get the file content at HEAD
+     *
+     * @param relativePath
+     * @return
+     */
+    private static String getContentAtHEAD(String repoDir, String relativePath) {
+        String output = runSystemCommand(repoDir,
+                "git",
+                "show",
+                "HEAD:" + relativePath);
+        if (output != null) {
+            return output;
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Read the content of a given file.
+     *
+     * @param path to be read
+     * @return string content of the file, or null in case of errors.
+     */
+    public static String readFileToString(String path) {
+        String content = "";
+        File file = new File(path);
+        if (file.exists()) {
+            String fileEncoding = "UTF-8";
+            try (BufferedReader reader =
+                         Files.newBufferedReader(Paths.get(path), Charset.forName(fileEncoding))) {
+                content = reader.lines().collect(Collectors.joining("\n"));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.err.println(path + " does not exist!");
+        }
+        return content;
     }
 }
 
