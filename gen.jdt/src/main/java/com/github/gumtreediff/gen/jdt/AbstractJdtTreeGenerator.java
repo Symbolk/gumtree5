@@ -31,6 +31,7 @@ import org.eclipse.jdt.core.compiler.IScanner;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -69,8 +70,10 @@ public abstract class AbstractJdtTreeGenerator extends TreeGenerator {
         parser.setSource(source);
         IScanner scanner = ToolFactory.createScanner(false, false, false, false);
         scanner.setSource(source);
-        AbstractJdtVisitor v = createVisitor(scanner);
-        ASTNode node = parser.createAST(null);
+        CompilationUnit node = (CompilationUnit) parser.createAST(null);
+        AbstractJdtVisitor v = createVisitor(scanner, node);
+//        ASTNode node = parser.createAST(null);
+        node.accept(v);
         if ((node.getFlags() & ASTNode.MALFORMED) != 0) // bitwise flag to check if the node has a syntax error
             throw new SyntaxException(this, r);
         node.accept(v);
@@ -78,4 +81,6 @@ public abstract class AbstractJdtTreeGenerator extends TreeGenerator {
     }
 
     protected abstract AbstractJdtVisitor createVisitor(IScanner scanner);
+
+    protected abstract AbstractJdtVisitor createVisitor(IScanner scanner, CompilationUnit cu);
 }

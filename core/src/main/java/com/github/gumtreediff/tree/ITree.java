@@ -34,6 +34,12 @@ public interface ITree {
 
     int NO_POS = -1;
 
+    void setStartLine(int lineNumber);
+    void setEndLine(int lineNumber);
+    int getStartLine();
+    int getEndine();
+
+
     /**
      * Returns a list containing the node and its descendants, ordered using a pre-order.
      *

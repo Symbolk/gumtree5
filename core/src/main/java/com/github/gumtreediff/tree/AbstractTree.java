@@ -26,10 +26,25 @@ import java.util.*;
 
 public abstract class AbstractTree implements ITree {
     protected ITree parent;
+    private int startLine;
+    private int endLine;
 
     protected List<ITree> children;
 
     protected TreeMetrics metrics;
+
+    public void setStartLine(int lineNumber){
+        this.startLine = lineNumber;
+    }
+    public void setEndLine(int lineNumber){
+        this.endLine = lineNumber;
+    }
+    public int getStartLine(){
+        return startLine;
+    }
+    public int getEndine(){
+        return endLine;
+    }
 
     @Override
     public String toString() {

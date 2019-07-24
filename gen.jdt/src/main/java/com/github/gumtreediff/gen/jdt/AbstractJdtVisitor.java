@@ -30,10 +30,13 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 
 import com.github.gumtreediff.tree.ITree;
 import com.github.gumtreediff.tree.TreeContext;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import static com.github.gumtreediff.tree.TypeSet.type;
 
 public abstract class AbstractJdtVisitor extends ASTVisitor {
+
+    private CompilationUnit cu;
 
     protected TreeContext context = new TreeContext();
 
@@ -41,6 +44,11 @@ public abstract class AbstractJdtVisitor extends ASTVisitor {
 
     public AbstractJdtVisitor() {
         super(true);
+    }
+
+    public AbstractJdtVisitor(CompilationUnit cu) {
+        super(true);
+        this.cu = cu;
     }
 
     public TreeContext getTreeContext() {
@@ -61,6 +69,10 @@ public abstract class AbstractJdtVisitor extends ASTVisitor {
         t.setPos(startPosition);
         t.setLength(length);
 
+        if(this.cu!=null){
+            t.setStartLine(cu.getLineNumber(startPosition));
+            t.setEndLine(cu.getLineNumber(startPosition + length));
+        }
         if (trees.isEmpty())
             context.setRoot(t);
         else {

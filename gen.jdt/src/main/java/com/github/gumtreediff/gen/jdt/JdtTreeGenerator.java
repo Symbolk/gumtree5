@@ -24,6 +24,7 @@ package com.github.gumtreediff.gen.jdt;
 import com.github.gumtreediff.gen.Register;
 import com.github.gumtreediff.gen.Registry;
 import org.eclipse.jdt.core.compiler.IScanner;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 
 @Register(id = "java-jdt", accept = "\\.java$", priority = Registry.Priority.MAXIMUM)
 public class JdtTreeGenerator extends AbstractJdtTreeGenerator {
@@ -31,6 +32,11 @@ public class JdtTreeGenerator extends AbstractJdtTreeGenerator {
     @Override
     protected AbstractJdtVisitor createVisitor(IScanner scanner) {
         return new JdtVisitor(scanner);
+    }
+
+    @Override
+    protected AbstractJdtVisitor createVisitor(IScanner scanner, CompilationUnit cu) {
+        return new JdtVisitor(scanner, cu);
     }
 
 }

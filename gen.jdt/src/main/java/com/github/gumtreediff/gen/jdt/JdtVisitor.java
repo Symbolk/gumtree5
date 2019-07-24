@@ -52,6 +52,11 @@ public class JdtVisitor  extends AbstractJdtVisitor {
         this.scanner = scanner;
     }
 
+    public JdtVisitor(IScanner scanner, CompilationUnit cu) {
+        super(cu);
+        this.scanner = scanner;
+    }
+
     @Override
     public void preVisit(ASTNode n) {
         pushNode(n, getLabel(n));

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map.Entry;
 
 public class Tree extends AbstractTree implements ITree {
-
     private Type type;
 
     private String label;

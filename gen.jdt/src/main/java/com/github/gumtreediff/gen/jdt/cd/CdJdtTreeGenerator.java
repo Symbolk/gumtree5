@@ -25,11 +25,17 @@ import com.github.gumtreediff.gen.Registry;
 import com.github.gumtreediff.gen.jdt.AbstractJdtVisitor;
 import com.github.gumtreediff.gen.jdt.AbstractJdtTreeGenerator;
 import org.eclipse.jdt.core.compiler.IScanner;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 
 @Register(id = "java-cdjdt", accept = "\\.java$", priority = Registry.Priority.MINIMUM)
 public class CdJdtTreeGenerator extends AbstractJdtTreeGenerator {
     @Override
     protected AbstractJdtVisitor createVisitor(IScanner scanner) {
+        return new CdJdtVisitor();
+    }
+
+    @Override
+    protected AbstractJdtVisitor createVisitor(IScanner scanner, CompilationUnit cu) {
         return new CdJdtVisitor();
     }
 }
