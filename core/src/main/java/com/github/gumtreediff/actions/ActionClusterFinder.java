@@ -20,14 +20,14 @@
 package com.github.gumtreediff.actions;
 
 import com.github.gumtreediff.actions.model.*;
+import com.github.gumtreediff.tree.ITree;
 import com.github.gumtreediff.tree.TreeContext;
-import org.jgrapht.DirectedGraph;
-import org.jgrapht.UndirectedGraph;
-import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.DefaultDirectedGraph;
+import org.jgrapht.alg.connectivity.ConnectivityInspector;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleGraph;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,9 +39,11 @@ public class ActionClusterFinder {
 
     private EditScript actions;
 
-    private DirectedGraph<Action, DefaultEdge> graph;
+    private DefaultDirectedGraph<Action, DefaultEdge> graph;
 
     private List<Set<Action>> clusters;
+
+    private List<ActionCluster> actionClusters = new ArrayList<>();
 
     public ActionClusterFinder(TreeContext src, TreeContext dst, EditScript actions) {
         this.src = src;
@@ -65,6 +67,33 @@ public class ActionClusterFinder {
 
         ConnectivityInspector<Action, DefaultEdge> alg = new ConnectivityInspector<>(graph);
         clusters = alg.connectedSets();
+
+        for(Set<Action> cluster : clusters){
+            Action rootAction = getRootAction(cluster);
+            Set<ITree> leafNodes = getInvolvedLeftNodes(cluster);
+            ActionCluster actionCluster = new ActionCluster(cluster, rootAction, leafNodes);
+            actionClusters.add(actionCluster);
+        }
+    }
+
+    public List<ActionCluster> getActionClusters() {
+        return actionClusters;
+    }
+
+
+    /**
+     * Get all identifiers involved in the action cluster
+     *
+     * @return
+     */
+    private Set<ITree> getInvolvedLeftNodes(Set<Action> actions) {
+        Set<ITree> result = new HashSet<>();
+        for (Action action : actions) {
+            if (action.getNode().getType().name.equals("SimpleName")) {
+                result.add(action.getNode());
+            }
+        }
+        return result;
     }
 
     public List<Set<Action>> getClusters() {
@@ -135,4 +164,29 @@ public class ActionClusterFinder {
             return "Unknown cluster type";
     }
 
+    public Action getRootAction(Set<Action> cluster) {
+        if (cluster.size() == 0)
+            return null;
+        Action first = cluster.iterator().next();
+        if (first instanceof Insert) {
+            Insert root = null;
+            for (Action a : cluster)
+                if (graph.inDegreeOf(a) == 0)
+                    root = (Insert) a;
+            return root;
+        } else if (first instanceof Move) {
+            Move m = (Move) first;
+            return m;
+        } else if (first instanceof Update) {
+            Update u = (Update) first;
+            return u;
+        } else if (first instanceof Delete) {
+            Delete root = null;
+            for (Action a : cluster)
+                if (graph.inDegreeOf(a) == 0)
+                    root = (Delete) a;
+            return root;
+        } else
+            return null;
+    }
 }
