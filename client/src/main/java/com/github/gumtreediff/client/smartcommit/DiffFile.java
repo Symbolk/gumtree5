@@ -1,32 +1,33 @@
 package com.github.gumtreediff.client.smartcommit;
 
 public class DiffFile {
-    private DiffFileStatus changeType;
+    private DiffFileStatus status;
     private String oldPath;
     private String newPath;
     private String oldContent;
     private String newContent;
 
-    public DiffFile(DiffFileStatus changeType, String oldPath, String newPath) {
-        this.changeType = changeType;
+    public DiffFile(DiffFileStatus status, String oldPath, String newPath) {
+        this.status = status;
         this.oldPath = oldPath;
         this.newPath = newPath;
     }
 
-    public DiffFile(DiffFileStatus changeType, String oldPath, String newPath, String oldContent, String newContent) {
-        this.changeType = changeType;
+    public DiffFile(
+            DiffFileStatus status, String oldPath, String newPath, String oldContent, String newContent) {
+        this.status = status;
         this.oldPath = oldPath;
         this.newPath = newPath;
         this.oldContent = oldContent;
         this.newContent = newContent;
     }
 
-    public DiffFileStatus getChangeType() {
-        return changeType;
+    public DiffFileStatus getStatus() {
+        return status;
     }
 
-    public void setChangeType(DiffFileStatus changeType) {
-        this.changeType = changeType;
+    public void setStatus(DiffFileStatus status) {
+        this.status = status;
     }
 
     public String getOldPath() {

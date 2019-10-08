@@ -14,7 +14,7 @@ public class DataCollector {
         // write old/new content to disk
         for (DiffFile filePair : filePairs) {
             // currently only collect MODIFIED Java files
-            if (filePair.getOldPath().endsWith(".java") && filePair.getChangeType().equals(DiffFileStatus.MODIFIED)) {
+            if (filePair.getOldPath().endsWith(".java") && filePair.getStatus().equals(DiffFileStatus.MODIFIED)) {
                 String dir = DATA_DIR + File.separator + REPO_NAME + File.separator + commitID + File.separator;
                 String aPath = dir + "a" + File.separator + filePair.getOldPath();
                 String bPath = dir + "b" + File.separator + filePair.getNewPath();
