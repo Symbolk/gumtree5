@@ -42,7 +42,7 @@ public abstract class AbstractTree implements ITree {
     public int getStartLine(){
         return startLine;
     }
-    public int getEndine(){
+    public int getEndLine(){
         return endLine;
     }
 

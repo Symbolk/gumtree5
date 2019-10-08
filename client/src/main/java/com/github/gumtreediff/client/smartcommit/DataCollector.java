@@ -1,4 +1,4 @@
-package com.github.gumtreediff.client;
+package com.github.gumtreediff.client.smartcommit;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -10,11 +10,11 @@ public class DataCollector {
         String DATA_DIR = "D:\\commit_data";
         String commitID = "dcf63a6c97dfde";
 
-        ArrayList<FilePair> filePairs = Utils.getChangedFilesAtCommit(REPO_DIR, commitID);
+        ArrayList<DiffFile> filePairs = Utils.getChangedFilesAtCommit(REPO_DIR, commitID);
         // write old/new content to disk
-        for (FilePair filePair : filePairs) {
+        for (DiffFile filePair : filePairs) {
             // currently only collect MODIFIED Java files
-            if (filePair.getOldPath().endsWith(".java") && filePair.getChangeType().equals(ChangeType.MODIFIED)) {
+            if (filePair.getOldPath().endsWith(".java") && filePair.getChangeType().equals(DiffFileStatus.MODIFIED)) {
                 String dir = DATA_DIR + File.separator + REPO_NAME + File.separator + commitID + File.separator;
                 String aPath = dir + "a" + File.separator + filePair.getOldPath();
                 String bPath = dir + "b" + File.separator + filePair.getNewPath();

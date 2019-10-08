@@ -37,7 +37,7 @@ public interface ITree {
     void setStartLine(int lineNumber);
     void setEndLine(int lineNumber);
     int getStartLine();
-    int getEndine();
+    int getEndLine();
 
 
     /**

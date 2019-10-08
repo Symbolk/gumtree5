@@ -1,4 +1,4 @@
-package com.github.gumtreediff.client;
+package com.github.gumtreediff.client.smartcommit;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -48,26 +48,33 @@ public class Utils {
      *
      * @return
      */
-    public static ArrayList<FilePair> getChangedFiles(String repoDir, String status) {
-        ArrayList<FilePair> filePairList = new ArrayList<>();
-        String lines[] = status.split("\\r?\\n");
+    public static ArrayList<DiffFile> getChangedFilesUnstaged(String repoDir) {
+        // run git status --porcelain to get changeset
+        String output =
+                Utils.runSystemCommand(
+                        repoDir,
+                        "git",
+                        "status",
+                        "--porcelain");
+        ArrayList<DiffFile> filePairList = new ArrayList<>();
+        String lines[] = output.split("\\r?\\n");
         for (int i = 0; i < lines.length; i++) {
             String temp[] = lines[i].trim().split("\\s+");
             String symbol = temp[0];
             String relativePath = temp[1];
             String absolutePath = repoDir + File.separator + relativePath;
-            ChangeType changeType = getTypeFromSymbol(symbol);
-            FilePair filePair = null;
+            DiffFileStatus changeType = getTypeFromSymbol(symbol);
+            DiffFile filePair = null;
             switch (changeType) {
                 case MODIFIED:
-                    filePair = new FilePair(changeType, relativePath, relativePath, getContentAtHEAD(repoDir, relativePath), readFileToString(absolutePath));
+                    filePair = new DiffFile(changeType, relativePath, relativePath, getContentAtHEAD(repoDir, relativePath), readFileToString(absolutePath));
                     break;
                 case ADDED:
                 case UNTRACKED:
-                    filePair = new FilePair(changeType, "", relativePath, "", readFileToString(absolutePath));
+                    filePair = new DiffFile(changeType, "", relativePath, "", readFileToString(absolutePath));
                     break;
                 case DELETED:
-                    filePair = new FilePair(changeType, relativePath, "", getContentAtHEAD(repoDir, relativePath), "");
+                    filePair = new DiffFile(changeType, relativePath, "", getContentAtHEAD(repoDir, relativePath), "");
                     break;
                 case RENAMED:
                 case COPIED:
@@ -75,7 +82,7 @@ public class Utils {
                         String oldPath = temp[1];
                         String newPath = temp[3];
                         String newAbsPath = repoDir + File.separator + temp[3];
-                        filePair = new FilePair(changeType, oldPath, newPath, getContentAtHEAD(repoDir, oldPath), readFileToString(newAbsPath));
+                        filePair = new DiffFile(changeType, oldPath, newPath, getContentAtHEAD(repoDir, oldPath), readFileToString(newAbsPath));
                     }
                     break;
                 default:
@@ -93,39 +100,39 @@ public class Utils {
      *
      * @return
      */
-    public static ArrayList<FilePair> getChangedFilesAtCommit(String repoDir, String commitID) {
+    public static ArrayList<DiffFile> getChangedFilesAtCommit(String repoDir, String commitID) {
         String output =
                 Utils.runSystemCommand(
                         repoDir,
                         "git",
                         "diff",
                         "--name-status", commitID, commitID + "~");
-        ArrayList<FilePair> filePairList = new ArrayList<>();
+        ArrayList<DiffFile> filePairList = new ArrayList<>();
         String lines[] = output.split("\\r?\\n");
         for (int i = 0; i < lines.length; i++) {
             String temp[] = lines[i].trim().split("\\s+");
             String symbol = temp[0];
             String relativePath = temp[1];
 //            String absolutePath = repoDir + File.separator + relativePath;
-            ChangeType changeType = getTypeFromSymbol(symbol);
-            FilePair filePair = null;
+            DiffFileStatus changeType = getTypeFromSymbol(symbol);
+            DiffFile filePair = null;
             switch (changeType) {
                 case MODIFIED:
-                    filePair = new FilePair(changeType, relativePath, relativePath, getContentAtCommit(repoDir, relativePath, commitID + "~"), getContentAtCommit(repoDir, relativePath, commitID));
+                    filePair = new DiffFile(changeType, relativePath, relativePath, getContentAtCommit(repoDir, relativePath, commitID + "~"), getContentAtCommit(repoDir, relativePath, commitID));
                     break;
                 case ADDED:
                 case UNTRACKED:
-                    filePair = new FilePair(changeType, "", relativePath, "", getContentAtCommit(repoDir, relativePath, commitID));
+                    filePair = new DiffFile(changeType, "", relativePath, "", getContentAtCommit(repoDir, relativePath, commitID));
                     break;
                 case DELETED:
-                    filePair = new FilePair(changeType, relativePath, "", getContentAtCommit(repoDir, relativePath, commitID + "~"), "");
+                    filePair = new DiffFile(changeType, relativePath, "", getContentAtCommit(repoDir, relativePath, commitID + "~"), "");
                     break;
                 case RENAMED:
                 case COPIED:
                     if (temp.length == 4) {
                         String oldPath = temp[1];
                         String newPath = temp[3];
-                        filePair = new FilePair(changeType, oldPath, newPath, getContentAtCommit(repoDir, oldPath, commitID + "~"), getContentAtCommit(repoDir, newPath, commitID));
+                        filePair = new DiffFile(changeType, oldPath, newPath, getContentAtCommit(repoDir, oldPath, commitID + "~"), getContentAtCommit(repoDir, newPath, commitID));
                     }
                     break;
                 default:
@@ -138,13 +145,13 @@ public class Utils {
         return filePairList;
     }
 
-    private static ChangeType getTypeFromSymbol(String symbol) {
-        for (ChangeType type : ChangeType.values()) {
+    private static DiffFileStatus getTypeFromSymbol(String symbol) {
+        for (DiffFileStatus type : DiffFileStatus.values()) {
             if (symbol.equals(type.symbol)) {
                 return type;
             }
         }
-        return ChangeType.UNMODIFIED;
+        return DiffFileStatus.UNMODIFIED;
     }
 
     /**

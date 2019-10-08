@@ -1,4 +1,7 @@
 description = 'GumTree abstract client module.'
 dependencies{
     compile 'org.neo4j.driver:neo4j-java-driver:1.7.5'
+//    compile group: 'io.reflectoring.diffparser', name: 'diffparser', version: '1.4'
+    compile group: 'org.jgrapht', name: 'jgrapht-core', version: '1.3.0'
+    compile group: 'org.jgrapht', name: 'jgrapht-io', version: '1.3.0'
 }

@@ -32,6 +32,7 @@ public class ActionCluster {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+        // TODO more elegant
         result = prime * result + ((rootAction == null) ? 0 : rootAction.hashCode());
         result = prime * result + ((actions == null) ? 0 : actions.hashCode());
         return result;
@@ -48,6 +49,7 @@ public class ActionCluster {
     }
 
     public String asString() {
+        // TODO more elegant
         return actions.toString() + leafNodes.toString();
     }
 

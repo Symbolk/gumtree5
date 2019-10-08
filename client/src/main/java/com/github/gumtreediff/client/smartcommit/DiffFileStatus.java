@@ -1,6 +1,6 @@
-package com.github.gumtreediff.client;
+package com.github.gumtreediff.client.smartcommit;
 
-public enum ChangeType {
+public enum DiffFileStatus {
     UNMODIFIED(" ", "unmodified"),
     MODIFIED("M", "modified"),
     ADDED("A", "added"),
@@ -14,7 +14,7 @@ public enum ChangeType {
     public String symbol;
     public String label;
 
-    ChangeType(String symbol, String label) {
+    DiffFileStatus(String symbol, String label) {
         this.symbol = symbol;
         this.label = label;
     }
