@@ -1,10 +1,15 @@
 package com.github.gumtreediff.client.smartcommit;
 
+import io.reflectoring.diffparser.api.DiffParser;
+import io.reflectoring.diffparser.api.UnifiedDiffParser;
+import io.reflectoring.diffparser.api.model.Diff;
+
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class Utils {
@@ -171,6 +176,28 @@ public class Utils {
             }
         }
         return DiffFileList;
+    }
+
+    public static List<Diff> getDiffInWorkingTree(String repoPath) {
+        String diffOutput =
+                Utils.runSystemCommand(
+                        repoPath,
+                        "git",
+                        "diff");
+        DiffParser parser = new UnifiedDiffParser();
+        List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
+        return diffs;
+    }
+
+    public static List<Diff> getDiffAtCommit(String repoPath, String commitID) {
+        String diffOutput =
+                Utils.runSystemCommand(
+                        repoPath,
+                        "git",
+                        "diff", commitID, commitID + "~");
+        DiffParser parser = new UnifiedDiffParser();
+        List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
+        return diffs;
     }
 
     /**

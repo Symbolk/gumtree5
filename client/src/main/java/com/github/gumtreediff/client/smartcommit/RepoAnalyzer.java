@@ -9,6 +9,7 @@ import com.github.gumtreediff.matchers.MappingStore;
 import com.github.gumtreediff.matchers.Matcher;
 import com.github.gumtreediff.matchers.Matchers;
 import com.github.gumtreediff.tree.TreeContext;
+import io.reflectoring.diffparser.api.model.Diff;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,11 @@ public class RepoAnalyzer {
                         actionCluster.newPath = diffFile.getNewPath();
                         // cluster change at method-level: extract change tuple from code change actions
 
-                        // save ChangeClusters into neo4j
+                        // add actions into diff hunks
+
+                        // add actions to neo4j
+
+                        // resolve symbol bindings
 
                         // run community detection to further cluster
                     }
