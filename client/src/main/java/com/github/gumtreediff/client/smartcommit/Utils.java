@@ -48,7 +48,7 @@ public class Utils {
      *
      * @return
      */
-    public static ArrayList<DiffFile> getChangedFilesUnstaged(String repoDir) {
+    public static ArrayList<DiffFile> getChangedFilesInWorkingTree(String repoDir) {
         // run git status --porcelain to get changeset
         String output = Utils.runSystemCommand(repoDir, "git", "status", "--porcelain");
         ArrayList<DiffFile> DiffFileList = new ArrayList<>();

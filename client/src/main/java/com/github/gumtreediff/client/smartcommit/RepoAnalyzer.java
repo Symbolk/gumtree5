@@ -22,7 +22,8 @@ public class RepoAnalyzer {
         String COMMIT_ID = "7713b8e6b5be67a4272d96b265db077020be7ba8";
         // get the HEAD and current content of changed files
         ArrayList<DiffFile> diffFiles = Utils.getChangedFilesAtCommit(REPO_PATH, COMMIT_ID);
-//        ArrayList<DiffFile> diffFiles = Utils.getChangedFilesUnstaged(REPO_PATH);
+        List<Diff> diffResults = Utils.getDiffAtCommit(REPO_PATH, COMMIT_ID);
+//        ArrayList<DiffFile> diffFiles = Utils.getChangedFilesInWorkingTree(REPO_PATH);
         // compute ast diff with gumtree api
         Map<String, List<ActionCluster>> fileToActionCluster = new HashMap<>();
         for (DiffFile diffFile : diffFiles) {
