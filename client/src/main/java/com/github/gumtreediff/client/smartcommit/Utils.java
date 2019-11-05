@@ -183,7 +183,7 @@ public class Utils {
                 Utils.runSystemCommand(
                         repoPath,
                         "git",
-                        "diff");
+                        "diff", "-U0");
         DiffParser parser = new UnifiedDiffParser();
         List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
         return diffs;
@@ -194,7 +194,7 @@ public class Utils {
                 Utils.runSystemCommand(
                         repoPath,
                         "git",
-                        "diff", commitID, commitID + "~");
+                        "diff", "-U0", commitID, commitID + "~");
         DiffParser parser = new UnifiedDiffParser();
         List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
         return diffs;
