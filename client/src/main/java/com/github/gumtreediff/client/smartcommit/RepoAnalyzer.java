@@ -25,6 +25,23 @@ public class RepoAnalyzer {
         ArrayList<DiffFile> diffFiles = Utils.getChangedFilesAtCommit(REPO_PATH, COMMIT_ID);
         List<Diff> diffResults = Utils.getDiffAtCommit(REPO_PATH, COMMIT_ID);
 //        ArrayList<DiffFile> diffFiles = Utils.getChangedFilesInWorkingTree(REPO_PATH);
+        for(Diff diff : diffResults){
+            Integer index=0;
+            for(Hunk hunk : diff.getHunks()){
+                index ++;
+                DiffHunk diffHunk = new DiffHunk();
+                diffHunk.setIndexInFile(index);
+                diffHunk.setOldFilePath(diff.getFromFileName());
+                diffHunk.setNewFilePath(diff.getToFileName());
+                diffHunk.setHunk(hunk);
+                diffHunk.setOldStartLine(hunk.getFromFileRange().getLineStart());
+                diffHunk.setOldEndLine(hunk.getFromFileRange().getLineStart() + hunk.getFromFileRange().getLineCount());
+                diffHunk.setNewStartLine(hunk.getToFileRange().getLineStart());
+                diffHunk.setNewEndLine(hunk.getToFileRange().getLineStart() + hunk.getToFileRange().getLineCount());
+                allDiffHunks.add(diffHunk);
+            }
+        }
+
         // compute ast diff with gumtree api
         Map<String, List<ActionCluster>> fileToActionCluster = new HashMap<>();
         for (DiffFile diffFile : diffFiles) {
@@ -39,14 +56,18 @@ public class RepoAnalyzer {
                     for (ActionCluster actionCluster : actionClusters) {
                         actionCluster.oldPath = diffFile.getOldPath();
                         actionCluster.newPath = diffFile.getNewPath();
-                        // cluster change at method-level: extract change tuple from code change actions
-
                         // add actions into diff hunks
-
+                        Integer startLine =  actionCluster.rootAction.getNode().getStartLine();
+                        Integer endLine =  actionCluster.rootAction.getNode().getEndLine();
+                        for(DiffHunk diffHunk : allDiffHunks){
+                          // a0 <= b1 && a1 >= b0
+                          if(diffHunk.getOldStartLine()<=endLine&&diffHunk.getOldEndLine() >= startLine){
+                            diffHunk.addCodeAction(actionCluster);
+                          }
+                        }
+                        
+                        // resolve symbol bindings to build edges
                         // add actions to neo4j
-
-                        // resolve symbol bindings
-
                         // run community detection to further cluster
                     }
                 } else if (diffFile.getStatus().equals(DiffFileStatus.ADDED)) {
