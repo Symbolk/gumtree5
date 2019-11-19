@@ -324,4 +324,21 @@ public class Utils {
         }
         return true;
     }
+
+    /**
+     * Generate the absolute path of a diff file from its name in the diff output
+     *
+     * @param repoPath
+     * @param diffFileName
+     */
+    public static String generatePathFromName(String repoPath, String diffFileName) {
+        String separator = repoPath.endsWith(File.separator) ? "" : File.separator;
+        if (diffFileName.startsWith("a/")) {
+            return repoPath + diffFileName.replaceFirst("a/", separator);
+        } else if (diffFileName.startsWith("b/")) {
+            return repoPath + diffFileName.replaceFirst("b/", separator);
+        }else{
+            return repoPath + diffFileName;
+        }
+    }
 }
