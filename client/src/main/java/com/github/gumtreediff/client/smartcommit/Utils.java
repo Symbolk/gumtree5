@@ -1,17 +1,14 @@
 package com.github.gumtreediff.client.smartcommit;
 
-import io.reflectoring.diffparser.api.DiffParser;
-import io.reflectoring.diffparser.api.UnifiedDiffParser;
-import io.reflectoring.diffparser.api.model.Diff;
-
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Helper functions to operate the file and the system.
+ */
 public class Utils {
     /**
      * Run system command and return the output
@@ -48,157 +45,7 @@ public class Utils {
         return builder.toString();
     }
 
-    /**
-     * Get the diff files in the current working directory
-     *
-     * @return
-     */
-    public static ArrayList<DiffFile> getChangedFilesInWorkingTree(String repoDir) {
-        // run git status --porcelain to get changeset
-        String output = Utils.runSystemCommand(repoDir, "git", "status", "--porcelain");
-        ArrayList<DiffFile> DiffFileList = new ArrayList<>();
-        String lines[] = output.split("\\r?\\n");
-        for (int i = 0; i < lines.length; i++) {
-            String temp[] = lines[i].trim().split("\\s+");
-            String symbol = temp[0];
-            String relativePath = temp[1];
-            String absolutePath = repoDir + File.separator + relativePath;
-            DiffFileStatus status = convertSymbolToStatus(symbol);
-            DiffFile DiffFile = null;
-            switch (status) {
-                case MODIFIED:
-                    DiffFile =
-                            new DiffFile(
-                                    status,
-                                    relativePath,
-                                    relativePath,
-                                    getContentAtHEAD(repoDir, relativePath),
-                                    readFileToString(absolutePath));
-                    break;
-                case ADDED:
-                case UNTRACKED:
-                    DiffFile = new DiffFile(status, "", relativePath, "", readFileToString(absolutePath));
-                    break;
-                case DELETED:
-                    DiffFile =
-                            new DiffFile(status, relativePath, "", getContentAtHEAD(repoDir, relativePath), "");
-                    break;
-                case RENAMED:
-                case COPIED:
-                    if (temp.length == 4) {
-                        String oldPath = temp[1];
-                        String newPath = temp[3];
-                        String newAbsPath = repoDir + File.separator + temp[3];
-                        DiffFile =
-                                new DiffFile(
-                                        status,
-                                        oldPath,
-                                        newPath,
-                                        getContentAtHEAD(repoDir, oldPath),
-                                        readFileToString(newAbsPath));
-                    }
-                    break;
-                default:
-                    break;
-            }
-            if (DiffFile != null) {
-                DiffFileList.add(DiffFile);
-            }
-        }
-        return DiffFileList;
-    }
 
-    /**
-     * Get the diff files between one commit and its previous commit
-     *
-     * @return
-     */
-    public static ArrayList<DiffFile> getChangedFilesAtCommit(String repoDir, String commitID) {
-        String output =
-                Utils.runSystemCommand(repoDir, "git", "diff", "--name-status", commitID, commitID + "~");
-        ArrayList<DiffFile> DiffFileList = new ArrayList<>();
-        String lines[] = output.split("\\r?\\n");
-        for (int i = 0; i < lines.length; i++) {
-            String temp[] = lines[i].trim().split("\\s+");
-            String symbol = temp[0];
-            String relativePath = temp[1];
-            //            String absolutePath = repoDir + File.separator + relativePath;
-            DiffFileStatus status = convertSymbolToStatus(symbol);
-            DiffFile DiffFile = null;
-            switch (status) {
-                case MODIFIED:
-                    DiffFile =
-                            new DiffFile(
-                                    status,
-                                    relativePath,
-                                    relativePath,
-                                    getContentAtCommit(repoDir, relativePath, commitID + "~"),
-                                    getContentAtCommit(repoDir, relativePath, commitID));
-                    break;
-                case ADDED:
-                case UNTRACKED:
-                    DiffFile =
-                            new DiffFile(
-                                    status,
-                                    "",
-                                    relativePath,
-                                    "",
-                                    getContentAtCommit(repoDir, relativePath, commitID));
-                    break;
-                case DELETED:
-                    DiffFile =
-                            new DiffFile(
-                                    status,
-                                    relativePath,
-                                    "",
-                                    getContentAtCommit(repoDir, relativePath, commitID + "~"),
-                                    "");
-                    break;
-                case RENAMED:
-                case COPIED:
-                    if (temp.length == 4) {
-                        String oldPath = temp[1];
-                        String newPath = temp[3];
-                        DiffFile =
-                                new DiffFile(
-                                        status,
-                                        oldPath,
-                                        newPath,
-                                        getContentAtCommit(repoDir, oldPath, commitID + "~"),
-                                        getContentAtCommit(repoDir, newPath, commitID));
-                    }
-                    break;
-                default:
-                    break;
-            }
-            if (DiffFile != null) {
-                DiffFileList.add(DiffFile);
-            }
-        }
-        return DiffFileList;
-    }
-
-    public static List<Diff> getDiffInWorkingTree(String repoPath) {
-        String diffOutput =
-                Utils.runSystemCommand(
-                        repoPath,
-                        "git",
-                        "diff", "-U0");
-        DiffParser parser = new UnifiedDiffParser();
-        List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
-        return diffs;
-    }
-
-    public static List<Diff> getDiffAtCommit(String repoPath, String commitID) {
-        String diffOutput =
-                Utils.runSystemCommand(
-                        repoPath,
-                        "git",
-                        "diff", "-U0", commitID, commitID + "~");
-        DiffParser parser = new UnifiedDiffParser();
-        List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
-        return diffs;
-    }
 
     /**
      * Convert the abbr symbol to status enum
@@ -206,43 +53,13 @@ public class Utils {
      * @param symbol
      * @return
      */
-    private static DiffFileStatus convertSymbolToStatus(String symbol) {
+    public static DiffFileStatus convertSymbolToStatus(String symbol) {
         for (DiffFileStatus status : DiffFileStatus.values()) {
             if (symbol.equals(status.symbol)) {
                 return status;
             }
         }
         return DiffFileStatus.UNMODIFIED;
-    }
-
-    /**
-     * Get the file content at HEAD
-     *
-     * @param relativePath
-     * @return
-     */
-    private static String getContentAtHEAD(String repoDir, String relativePath) {
-        String output = runSystemCommand(repoDir, "git", "show", "HEAD:" + relativePath);
-        if (output != null) {
-            return output;
-        } else {
-            return "";
-        }
-    }
-
-    /**
-     * Get the file content at one commit
-     *
-     * @param relativePath
-     * @return
-     */
-    private static String getContentAtCommit(String repoDir, String relativePath, String commitID) {
-        String output = runSystemCommand(repoDir, "git", "show", commitID + ":" + relativePath);
-        if (output != null) {
-            return output;
-        } else {
-            return "";
-        }
     }
 
     /**
