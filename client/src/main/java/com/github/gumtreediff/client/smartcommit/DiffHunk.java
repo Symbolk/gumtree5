@@ -7,22 +7,22 @@ import java.util.List;
 
 public class DiffHunk {
 
-  private Integer indexInFile;  // the index of the diff hunk in the current file diff, start from 1
+  private Integer index;  // the index of the diff hunk in the current file diff, start from 0
   private String oldRelativePath;
   private String newRelativePath;
   private Hunk hunk;
-  private List<ActionCluster> codeActions;
+  private List<ActionCluster> changeActions;
   private Integer oldStartLine;
   private Integer oldEndLine;
   private Integer newStartLine;
   private Integer newEndLine;
 
-  public Integer getIndexInFile() {
-    return indexInFile;
+  public Integer getIndex() {
+    return index;
   }
 
-  public void setIndexInFile(Integer indexInFile) {
-    this.indexInFile = indexInFile;
+  public void setIndex(Integer index) {
+    this.index = index;
   }
 
   public String getOldRelativePath() {
@@ -49,13 +49,13 @@ public class DiffHunk {
     this.hunk = hunk;
   }
 
-  public List<ActionCluster> getCodeActions() {
-    return codeActions;
+  public List<ActionCluster> getChangeActions() {
+    return changeActions;
   }
 
-  public void setCodeActions(
-      List<ActionCluster> codeActions) {
-    this.codeActions = codeActions;
+  public void setChangeActions(
+      List<ActionCluster> changeActions) {
+    this.changeActions = changeActions;
   }
 
   public Integer getOldStartLine() {
@@ -91,9 +91,9 @@ public class DiffHunk {
   }
 
   public void addCodeAction(ActionCluster actionCluster) {
-    if (this.codeActions == null) {
-      this.codeActions = new ArrayList<>();
+    if (this.changeActions == null) {
+      this.changeActions = new ArrayList<>();
     }
-    this.codeActions.add(actionCluster);
+    this.changeActions.add(actionCluster);
   }
 }

@@ -46,7 +46,6 @@ public class Utils {
     }
 
 
-
     /**
      * Convert the abbr symbol to status enum
      *
@@ -154,8 +153,17 @@ public class Utils {
             return repoPath + diffFileName.replaceFirst("a/", separator);
         } else if (diffFileName.startsWith("b/")) {
             return repoPath + diffFileName.replaceFirst("b/", separator);
-        }else{
+        } else {
             return repoPath + diffFileName;
         }
+    }
+
+    /**
+     * Get the file name from given path (in Git, linux style)
+     * @param path
+     * @return
+     */
+    public static String getFileNameFromPath(String path) {
+        return path.substring(path.lastIndexOf("/") + 1);
     }
 }

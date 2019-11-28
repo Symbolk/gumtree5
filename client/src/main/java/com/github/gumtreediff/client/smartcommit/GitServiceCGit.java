@@ -38,6 +38,7 @@ public class GitServiceCGit implements GitService {
                 case MODIFIED:
                     DiffFile =
                             new DiffFile(
+                                    i,
                                     status,
                                     relativePath,
                                     relativePath,
@@ -46,11 +47,11 @@ public class GitServiceCGit implements GitService {
                     break;
                 case ADDED:
                 case UNTRACKED:
-                    DiffFile = new DiffFile(status, "", relativePath, "", readFileToString(absolutePath));
+                    DiffFile = new DiffFile(i, status, "", relativePath, "", readFileToString(absolutePath));
                     break;
                 case DELETED:
                     DiffFile =
-                            new DiffFile(status, relativePath, "", getContentAtHEAD(repoDir, relativePath), "");
+                            new DiffFile(i, status, relativePath, "", getContentAtHEAD(repoDir, relativePath), "");
                     break;
                 case RENAMED:
                 case COPIED:
@@ -59,7 +60,7 @@ public class GitServiceCGit implements GitService {
                         String newPath = temp[3];
                         String newAbsPath = repoDir + File.separator + temp[3];
                         DiffFile =
-                                new DiffFile(
+                                new DiffFile(i,
                                         status,
                                         oldPath,
                                         newPath,
@@ -99,6 +100,7 @@ public class GitServiceCGit implements GitService {
                 case MODIFIED:
                     DiffFile =
                             new DiffFile(
+                                    i,
                                     status,
                                     relativePath,
                                     relativePath,
@@ -109,6 +111,7 @@ public class GitServiceCGit implements GitService {
                 case UNTRACKED:
                     DiffFile =
                             new DiffFile(
+                                    i,
                                     status,
                                     "",
                                     relativePath,
@@ -118,6 +121,7 @@ public class GitServiceCGit implements GitService {
                 case DELETED:
                     DiffFile =
                             new DiffFile(
+                                    i,
                                     status,
                                     relativePath,
                                     "",
@@ -131,6 +135,7 @@ public class GitServiceCGit implements GitService {
                         String newPath = temp[3];
                         DiffFile =
                                 new DiffFile(
+                                        i,
                                         status,
                                         oldPath,
                                         newPath,
@@ -172,10 +177,8 @@ public class GitServiceCGit implements GitService {
             // the index of the diff hunk in the current file diff, start from 1
             Integer index = 0;
             for (Hunk hunk : diff.getHunks()) {
-                index++;
-
                 DiffHunk diffHunk = new DiffHunk();
-                diffHunk.setIndexInFile(index);
+                diffHunk.setIndex(index);
                 diffHunk.setOldRelativePath(diff.getFromFileName());
                 diffHunk.setNewRelativePath(diff.getToFileName());
                 diffHunk.setHunk(hunk);
@@ -184,6 +187,7 @@ public class GitServiceCGit implements GitService {
                 diffHunk.setNewStartLine(hunk.getToFileRange().getLineStart());
                 diffHunk.setNewEndLine(hunk.getToFileRange().getLineStart() + hunk.getToFileRange().getLineCount());
                 allDiffHunks.add(diffHunk);
+                index++;
             }
         }
         return allDiffHunks;
@@ -204,7 +208,7 @@ public class GitServiceCGit implements GitService {
                         "git",
                         "diff", "-U0", commitID, commitID + "~");
         DiffParser parser = new UnifiedDiffParser();
-        // TODO fix the bug within the library when parsing added files
+        // TODO fix the bug within the library when parsing diff with only added lines
         List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
         return generateDiffHunks(diffs);
     }
