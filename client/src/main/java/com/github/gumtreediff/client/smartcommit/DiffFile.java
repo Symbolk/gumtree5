@@ -2,22 +2,22 @@ package com.github.gumtreediff.client.smartcommit;
 
 public class DiffFile {
     private DiffFileStatus status;
-    private String oldPath;
-    private String newPath;
+    private String oldRelativePath;
+    private String newRelativePath;
     private String oldContent;
     private String newContent;
 
-    public DiffFile(DiffFileStatus status, String oldPath, String newPath) {
+    public DiffFile(DiffFileStatus status, String oldRelativePath, String newRelativePath) {
         this.status = status;
-        this.oldPath = oldPath;
-        this.newPath = newPath;
+        this.oldRelativePath = oldRelativePath;
+        this.newRelativePath = newRelativePath;
     }
 
     public DiffFile(
-            DiffFileStatus status, String oldPath, String newPath, String oldContent, String newContent) {
+            DiffFileStatus status, String oldRelativePath, String newRelativePath, String oldContent, String newContent) {
         this.status = status;
-        this.oldPath = oldPath;
-        this.newPath = newPath;
+        this.oldRelativePath = oldRelativePath;
+        this.newRelativePath = newRelativePath;
         this.oldContent = oldContent;
         this.newContent = newContent;
     }
@@ -30,20 +30,20 @@ public class DiffFile {
         this.status = status;
     }
 
-    public String getOldPath() {
-        return oldPath;
+    public String getOldRelativePath() {
+        return oldRelativePath;
     }
 
-    public void setOldPath(String oldPath) {
-        this.oldPath = oldPath;
+    public void setOldRelativePath(String oldRelativePath) {
+        this.oldRelativePath = oldRelativePath;
     }
 
-    public String getNewPath() {
-        return newPath;
+    public String getNewRelativePath() {
+        return newRelativePath;
     }
 
-    public void setNewPath(String newPath) {
-        this.newPath = newPath;
+    public void setNewRelativePath(String newRelativePath) {
+        this.newRelativePath = newRelativePath;
     }
 
     public String getOldContent() {

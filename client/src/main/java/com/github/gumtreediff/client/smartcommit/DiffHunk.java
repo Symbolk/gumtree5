@@ -7,9 +7,9 @@ import java.util.List;
 
 public class DiffHunk {
 
-  private Integer indexInFile;  // start from 1
-  private String oldFilePath;
-  private String newFilePath;
+  private Integer indexInFile;  // the index of the diff hunk in the current file diff, start from 1
+  private String oldRelativePath;
+  private String newRelativePath;
   private Hunk hunk;
   private List<ActionCluster> codeActions;
   private Integer oldStartLine;
@@ -25,20 +25,20 @@ public class DiffHunk {
     this.indexInFile = indexInFile;
   }
 
-  public String getOldFilePath() {
-    return oldFilePath;
+  public String getOldRelativePath() {
+    return oldRelativePath;
   }
 
-  public void setOldFilePath(String oldFilePath) {
-    this.oldFilePath = oldFilePath;
+  public void setOldRelativePath(String oldRelativePath) {
+    this.oldRelativePath = oldRelativePath;
   }
 
-  public String getNewFilePath() {
-    return newFilePath;
+  public String getNewRelativePath() {
+    return newRelativePath;
   }
 
-  public void setNewFilePath(String newFilePath) {
-    this.newFilePath = newFilePath;
+  public void setNewRelativePath(String newRelativePath) {
+    this.newRelativePath = newRelativePath;
   }
 
   public Hunk getHunk() {

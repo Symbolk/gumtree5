@@ -169,15 +169,15 @@ public class GitServiceCGit implements GitService {
     private List<DiffHunk> generateDiffHunks(List<Diff> diffs) {
         List<DiffHunk> allDiffHunks = new ArrayList<>();
         for (Diff diff : diffs) {
-            // the index of the hunk in the current file
+            // the index of the diff hunk in the current file diff, start from 1
             Integer index = 0;
             for (Hunk hunk : diff.getHunks()) {
                 index++;
 
                 DiffHunk diffHunk = new DiffHunk();
                 diffHunk.setIndexInFile(index);
-                diffHunk.setOldFilePath(diff.getFromFileName());
-                diffHunk.setNewFilePath(diff.getToFileName());
+                diffHunk.setOldRelativePath(diff.getFromFileName());
+                diffHunk.setNewRelativePath(diff.getToFileName());
                 diffHunk.setHunk(hunk);
                 diffHunk.setOldStartLine(hunk.getFromFileRange().getLineStart());
                 diffHunk.setOldEndLine(hunk.getFromFileRange().getLineStart() + hunk.getFromFileRange().getLineCount());
