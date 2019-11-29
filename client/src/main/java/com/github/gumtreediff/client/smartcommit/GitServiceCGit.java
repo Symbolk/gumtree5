@@ -85,8 +85,10 @@ public class GitServiceCGit implements GitService {
      */
     @Override
     public ArrayList<DiffFile> getChangedFilesAtCommit(String repoDir, String commitID) {
+        // git diff <start_commit> <end_commit>
+        // on Windows the ~ character must be used instead of ^
         String output =
-                Utils.runSystemCommand(repoDir, "git", "diff", "--name-status", commitID, commitID + "~");
+                Utils.runSystemCommand(repoDir, "git", "diff", "--name-status", commitID + "~", commitID);
         ArrayList<DiffFile> DiffFileList = new ArrayList<>();
         String lines[] = output.split("\\r?\\n");
         for (int i = 0; i < lines.length; i++) {
@@ -159,7 +161,7 @@ public class GitServiceCGit implements GitService {
                 Utils.runSystemCommand(
                         repoPath,
                         "git",
-                        "diff", "-U0");
+                        "diff", "-U1");
         DiffParser parser = new UnifiedDiffParser();
         List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
         return generateDiffHunks(diffs);
@@ -182,10 +184,11 @@ public class GitServiceCGit implements GitService {
                 diffHunk.setOldRelativePath(diff.getFromFileName());
                 diffHunk.setNewRelativePath(diff.getToFileName());
                 diffHunk.setHunk(hunk);
-                diffHunk.setOldStartLine(hunk.getFromFileRange().getLineStart());
-                diffHunk.setOldEndLine(hunk.getFromFileRange().getLineStart() + hunk.getFromFileRange().getLineCount());
-                diffHunk.setNewStartLine(hunk.getToFileRange().getLineStart());
-                diffHunk.setNewEndLine(hunk.getToFileRange().getLineStart() + hunk.getToFileRange().getLineCount());
+                // [startLine, endLine]
+                diffHunk.setOldStartLine(hunk.getFromFileRange().getLineStart() + 1);
+                diffHunk.setOldEndLine(hunk.getFromFileRange().getLineStart() + hunk.getFromFileRange().getLineCount() - 2);
+                diffHunk.setNewStartLine(hunk.getToFileRange().getLineStart() + 1);
+                diffHunk.setNewEndLine(hunk.getToFileRange().getLineStart() + hunk.getToFileRange().getLineCount() - 2);
                 allDiffHunks.add(diffHunk);
                 index++;
             }
@@ -202,13 +205,15 @@ public class GitServiceCGit implements GitService {
      */
     @Override
     public List<DiffHunk> getDiffHunksAtCommit(String repoPath, String commitID) {
+        // git diff <start_commit> <end_commit>
+        // on Windows the ~ character must be used instead of ^
         String diffOutput =
                 Utils.runSystemCommand(
                         repoPath,
                         "git",
-                        "diff", "-U0", commitID, commitID + "~");
+                        "diff", "-U0", commitID + "~", commitID);
         DiffParser parser = new UnifiedDiffParser();
-        // TODO fix the bug within the library when parsing diff with only added lines
+        // TODO fix the bug within the library when parsing diff with only added lines with -U0 or default -U3
         List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));
         return generateDiffHunks(diffs);
     }
