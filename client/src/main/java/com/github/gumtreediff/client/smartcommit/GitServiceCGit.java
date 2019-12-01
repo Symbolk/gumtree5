@@ -211,7 +211,7 @@ public class GitServiceCGit implements GitService {
                 Utils.runSystemCommand(
                         repoPath,
                         "git",
-                        "diff", "-U0", commitID + "~", commitID);
+                        "diff", "-U1", commitID + "~", commitID);
         DiffParser parser = new UnifiedDiffParser();
         // TODO fix the bug within the library when parsing diff with only added lines with -U0 or default -U3
         List<Diff> diffs = parser.parse(new ByteArrayInputStream(diffOutput.getBytes()));

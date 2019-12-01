@@ -15,15 +15,18 @@ import java.util.stream.Collectors;
 
 public class RepoAnalyzer {
     private String repoPath;
+    private String jrePath;
     private String commitID;
     private List<DiffFile> diffFiles;
     private List<DiffHunk> diffHunks;
 
-    public RepoAnalyzer(String repoPath) {
+    public RepoAnalyzer(String jrePath, String repoPath) {
+        this.jrePath = jrePath;
         this.repoPath = repoPath;
     }
 
-    public RepoAnalyzer(String repoPath, String commitID) {
+    public RepoAnalyzer(String jrePath, String repoPath, String commitID) {
+        this.jrePath = jrePath;
         this.repoPath = repoPath;
         this.commitID = commitID;
     }
@@ -56,8 +59,9 @@ public class RepoAnalyzer {
         // given a git repo, get the file-level change set of the working directory
         String REPO_PATH = "/Users/symbolk/coding/dev/IntelliMerge";
         String COMMIT_ID = "53c1c430de96e459fc6b633d20c328eaff7d0374";
+        String jrePath = "/Library/Java/JavaVirtualMachines/jdk1.8.0_231.jdk/Contents/Home/jre/lib/rt.jar"; // local java runtime (rt.jar) path
         GitService gitService = new GitServiceCGit();
-        RepoAnalyzer repoAnalyzer = new RepoAnalyzer(REPO_PATH, COMMIT_ID);
+        RepoAnalyzer repoAnalyzer = new RepoAnalyzer(jrePath, REPO_PATH, COMMIT_ID);
 
         // collect the changed files and diff hunks
         ArrayList<DiffFile> diffFiles = gitService.getChangedFilesAtCommit(REPO_PATH, COMMIT_ID);
@@ -74,33 +78,45 @@ public class RepoAnalyzer {
             // parse the changed files into ASTs
             Pair<CompilationUnit, CompilationUnit> CUPair = repoAnalyzer.generateCUPair(diffFile);
 
-            for (DiffHunk diffHunk : diffHunksInFile) {
+            // extract change stems of each diff hunk, resolve symbols to get qualified name as the feature of the diff hunk
+            if (CUPair.getRight() != null) {
+                CompilationUnit cu = CUPair.getRight();
+                for (DiffHunk diffHunk : diffHunksInFile) {
+                    // find nodes covered or covering by each diff hunk
+                    int startPos = cu.getPosition(diffHunk.getNewStartLine(), 0);
+                    int endPos = cu.getPosition(diffHunk.getNewEndLine() + 1, 0);
+                    int length = endPos - startPos;
+                    if (length > 0) {
+                        NodeFinder nodeFinder = new NodeFinder(CUPair.getLeft(), startPos, length);
+                        ASTNode coveredNode = nodeFinder.getCoveredNode();
+                        if (coveredNode != null) {
+                            SimpleNameVisitor v = new SimpleNameVisitor();
+                            coveredNode.accept(v);
+                        }
+                    }
+                }
+                // resolve symbols to get fully qualified name
+                // build nodes for diff hunks and unchanged nodes
 
+                // visualize the graph
             }
 
-//            if (CUPair.getLeft() != null) {
-//                // TODO determine the length
-//                NodeFinder nodeFinder = new NodeFinder(CUPair.getLeft(), , );
-//                ASTNode coveredNode = nodeFinder.getCoveredNode();
-//                if (coveredNode == null) {
-//                    coveredNode = nodeFinder.getCoveringNode();
-//                }
-//            }
-//
-//            if (CUPair.getRight() != null) {
-//
-//            }
         }
-        // find nodes covered or covering by each diff hunk
-
-        // resolve symbols to get fully qualified name
-
-        // build nodes for diff hunks and unchanged nodes
-
-        // visualize the graph
-
 
     }
+
+
+    static class SimpleNameVisitor extends ASTVisitor {
+        @Override
+        public boolean visit(SimpleName node) {
+            System.out.println(node.getIdentifier());
+            System.out.println(node.resolveBinding());
+            System.out.println(node.resolveTypeBinding());
+            System.out.println("--------------");
+            return true;
+        }
+    }
+
 
     /**
      * Currently for Java 8
@@ -109,6 +125,30 @@ public class RepoAnalyzer {
      * @return
      */
     private Pair<CompilationUnit, CompilationUnit> generateCUPair(DiffFile diffFile) {
+
+        ASTParser parser = initASTParser();
+        parser.setUnitName(Utils.getFileNameFromPath(diffFile.getOldRelativePath()));
+        parser.setSource(diffFile.getOldContent().toCharArray());
+        CompilationUnit oldCU = (CompilationUnit) parser.createAST(null);
+        if (oldCU.getAST().hasBindingsRecovery()) {
+            System.out.println("Old CU binding enabled!");
+        }
+
+        parser = initASTParser();
+        parser.setUnitName(Utils.getFileNameFromPath(diffFile.getNewRelativePath()));
+        parser.setSource(diffFile.getNewContent().toCharArray());
+        CompilationUnit newCU = (CompilationUnit) parser.createAST(null);
+        if (newCU.getAST().hasBindingsRecovery()) {
+            System.out.println("New CU binding enabled!");
+        }
+        return Pair.of(oldCU, newCU);
+    }
+
+    /**
+     * Init the JDT ASTParser
+     * @return
+     */
+    private ASTParser initASTParser() {
         // set up the parser and resolver options
         ASTParser parser = ASTParser.newParser(8);
         parser.setResolveBindings(true);
@@ -119,17 +159,9 @@ public class RepoAnalyzer {
 
         // set up the arguments
         String[] sources = {this.repoPath}; // sources to resolve symbols
-        String[] classpath = {"/Library/Java/JavaVirtualMachines/jdk1.8.0_231.jdk/Contents/Home/jre/lib/rt.jar"}; // local java runtime (rt.jar) path
+        String[] classpath = {this.jrePath}; // local java runtime (rt.jar) path
         parser.setEnvironment(classpath, sources, new String[]{"UTF-8"}, true);
-
-        parser.setUnitName(Utils.getFileNameFromPath(diffFile.getOldRelativePath()));
-        parser.setSource(diffFile.getOldContent().toCharArray());
-        CompilationUnit oldCU = (CompilationUnit) parser.createAST(null);
-
-        parser.setUnitName(Utils.getFileNameFromPath(diffFile.getNewRelativePath()));
-        parser.setSource(diffFile.getNewContent().toCharArray());
-        CompilationUnit newCU = (CompilationUnit) parser.createAST(null);
-        return Pair.of(oldCU, newCU);
+        return parser;
     }
 
     /**
